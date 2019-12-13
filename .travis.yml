@@ -9,7 +9,7 @@ before_install:
 install:
   - pip install ansible
 before_script:
-  - 'ansible-playbook -i controller.yml -e "{ clean: true, build_directory: ${BUILD_DIR}, build_number: ${TRAVIS_BUILD_NUMBER} }" build.yml'
+  - 'ansible-playbook -i controller.yml -e "{ clean: true, build_directory: ${BUILD_DIR}, build_number: ${TRAVIS_BUILD_NUMBER}, version: ${TRAVIS_TAG} }" build.yml'
 script:
   - 'ansible-playbook -i "${BUILD_DIR}/${TRAVIS_BUILD_NUMBER}/controller.yml" "${BUILD_DIR}/${TRAVIS_BUILD_NUMBER}/execute.yml" --syntax-check'
   - 'ansible-playbook -i "${BUILD_DIR}/${TRAVIS_BUILD_NUMBER}/controller.yml" "${BUILD_DIR}/${TRAVIS_BUILD_NUMBER}/kill.yml" --syntax-check'
