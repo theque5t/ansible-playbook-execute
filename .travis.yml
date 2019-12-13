@@ -17,9 +17,8 @@ deploy:
   provider: releases
   api_key:
     secure: Im6tmR9hyCuHRL/MNcLwWnTOSh83HL3pEzyagbb8mNX5eC7lIMMyj9g9LJJwGNFCzJayOkz/PTyyT2RJ0vUe5xLuJxmBWFjnPgvqMbBjCN6jl30qTcyV0zJhcTALq0UC1kjf7s2iwPBchjV04izw3D1117jcpmO4A5/Rdjyf0Io5puMjYMHMzyRTUqrTYaMX408Zv4jyPflhlYLzxR/fRMsrMmbn72mWVeI/T1O7HwR4l8L1CdFb6P7uj6DTJvEc4gSvFPXzZxl5BnpZOLpydRCf23sguhB2gHI8NqPup1PulNuISf1lwrWzcpAP7yNDA8N6/rOv+KOZCUkVubg4tT5Cis2EXSAx7VDDhlxfwEI01nxQPxBJ0IghPc8wZsZD2PL96MffbUNmCW3m6k8OdoOoLtovwj3pq0vlfiMLc6fm/y/m1Sm3O6PKo5BtOfEL0m7NxaqAiJehdO49rx3MECHZTXiP94nRbKb8yjQzP9K0paSykH5TlgGqskfJFpQEAtfz33fAPSd0bd7dWLTuohmWfoqKq7kBfo0nTjta1QGuFTt03YxfHJGMj5i5R2r2QkSf2d7qiJdRRofvToNt6xji3Lnm8pWm4aa4rvJCpxTUBQuyTm6tAbJpauXXiFGl244FS4g9x9W5MVERQOki/vj5Qob3uHAM8xBp+/qnAUo=
-  file_glob: true
   file:
-    - "${BUILD_DIR}/${TRAVIS_BUILD_NUMBER}/*"
+    - "${BUILD_DIR}/${TRAVIS_BUILD_NUMBER}.tar.gz"
   skip_cleanup: true
   draft: true
   on:
