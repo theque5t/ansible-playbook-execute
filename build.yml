@@ -6,6 +6,7 @@
     _build_number: "{{ build_number | default(_build_date) }}"
     _build_directory: "{{ build_directory | default('build') }}"
     _build_version: "{{ version if version else _build_number }}"
+    _build_package_name: ansible-playbook-execute
   tasks:
     - set_fact:
         _build_date: "{{ lookup('pipe', 'date +%Y%m%d%H%M%S%3N') }}"
@@ -27,7 +28,7 @@
 
     - name: set build
       set_fact:
-        _build: "{{ _build_directory }}/{{ _build_number }}"
+        _build: "{{ _build_directory }}/{{ _build_package_name }}-{{ _build_number }}"
 
     - name: create _build and base directories
       file:
@@ -75,19 +76,19 @@
     - name: package artifacts
       archive:
         path: "{{ _build }}/*"
-        dest: "{{ _build_directory }}/{{ _build_version }}.tar.gz"
+        dest: "{{ _build_directory }}/{{ _build_package_name }}-{{ _build_version }}.tar.gz"
         format: gz
 
     - name: package stat
       stat:
-        path: "{{ _build_directory }}/{{ _build_version }}.tar.gz"
+        path: "{{ _build_directory }}/{{ _build_package_name }}-{{ _build_version }}.tar.gz"
         checksum_algorithm: sha256
       register: _build_stat
 
     - name: create package checksum
       copy:
         content: "{{ _build_stat.stat.checksum }}"
-        dest: "{{ _build_directory }}/{{ _build_version }}.tar.gz.sha256"
+        dest: "{{ _build_directory }}/{{ _build_package_name }}-{{ _build_version }}.tar.gz.sha256"
       vars:
         diy_runner_on_ok_msg: build successfull
         diy_runner_on_ok_msg_color: green
