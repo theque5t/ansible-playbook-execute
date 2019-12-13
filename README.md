@@ -571,7 +571,7 @@ dependencies:                     # dependencies to be processed
     * [default exclude file types](#default-exclude-file-types)
   
 * **Type:** `ansible_role`
-  **Description:** [Ansible role](https://docs.ansible.com/ansible/latest/user_guide/intro_inventory.html) data
+  **Description:** [Ansible role](https://docs.ansible.com/ansible/latest/user_guide/playbooks_reuse_roles.html#role-directory-structure) data
   **Assembly Path:** `<playbook_directory>/roles/<dependency_name>`
   **Default Include:**
     * [default include file types](#default-include-file-types)
