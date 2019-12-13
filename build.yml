@@ -27,7 +27,7 @@
 
     - name: set build
       set_fact:
-        _build: "{{ _build_directory }}/{{ _build_number }}"
+        _build: "{{ _build_directory }}/{{ _build_version }}"
 
     - name: create _build and base directories
       file:
