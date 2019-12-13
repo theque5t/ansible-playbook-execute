@@ -3,8 +3,7 @@ language: python
 python:
   - "2.7"
 env:
-  - BUILD_DIR=build
-  - ANSIBLE_CONFIG=ansible.cfg
+  - BUILD_DIR=build ANSIBLE_CONFIG=ansible.cfg
 before_install:
   - sudo apt-get update -qq
 install:
