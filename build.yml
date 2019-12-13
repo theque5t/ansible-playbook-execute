@@ -27,7 +27,7 @@
 
     - name: create build and base directories
       file:
-        path: "{{ _build_directory }}/{{ _build_version }}/{{ item }}"
+        path: "{{ _build_directory }}/{{ _build_number }}/{{ item }}"
         state: directory
       with_items:
         - callback_plugins
@@ -68,6 +68,6 @@
             source_repo: https://github.com/theque5t/ansible-playbook-execute
           dest: "{{ build }}/manifest.yml"
       vars:
-        build: "{{ _build_directory }}/{{ _build_version }}"
+        build: "{{ _build_directory }}/{{ _build_number }}"
         diy_runner_on_ok_msg: build successfull
         diy_runner_on_ok_msg_color: green
