@@ -77,3 +77,17 @@
         path: "{{ _build }}/*"
         dest: "{{ _build }}.tar.gz"
         format: gz
+
+    - name: package stat
+      stat:
+        path: "{{ _build }}.tar.gz"
+        checksum_algorithm: sha256
+      register: _build_stat
+
+    - name: create package checksum
+      copy:
+        content: "{{ _build_stat.stat.checksum }}"
+        dest: "{{ _build }}.tar.gz.sha256"
+      vars:
+        diy_runner_on_ok_msg: build successfull
+        diy_runner_on_ok_msg_color: green
