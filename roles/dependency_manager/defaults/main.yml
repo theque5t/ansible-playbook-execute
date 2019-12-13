@@ -1,0 +1,135 @@
+---
+_dependency_manager_dependency_schema:
+  name:
+    required: true
+    value_types: [unicode, AnsibleUnicode, AnsibleUnsafeText]
+  version:
+    required: true
+    value_set:
+      pattern: ^(\d+\.){2}(\d+)$
+  type:
+    required: true
+    value_set: "{{ _dependency_manager_dependency_types }}"
+  src:
+    required: true
+    value_types:
+      by_src_type:
+        git_repo:
+          dict: [repo, version]
+  src_type:
+    required: true
+    value_set:
+      - git_repo
+  include:
+    required: false
+    value_types: [list]
+  exclude:
+    required: false
+    value_types: [list]
+
+_dependency_manager_dependencies: "{{
+  dependencies |
+  default(dependency_manager_dependencies) |
+  default([])
+}}"
+
+_dependency_manager_uncollected_dependencies: "{{
+  _dependency_manager_found_dependencies | symmetric_difference(_dependency_manager_collected_dependencies)
+}}"
+
+_dependency_manager_has_uncollected_dependencies: "{{
+  (_dependency_manager_uncollected_dependencies | length) > 0
+}}"
+
+_dependency_manager_playbook_directory: "{{
+  playbook_directory |
+  default(dependency_manager_playbook_directory) |
+  default(playbook_dir)
+}}"
+
+_dependency_manager_working_directory: "{{
+  working_directory |
+  default(dependency_manager_working_directory) |
+  default(_dependency_manager_playbook_directory+'/.dependencymanager')
+}}"
+
+_dependency_manager_cleanup: "{{
+  cleanup |
+  default(dependency_manager_cleanup) |
+  default(true)
+}}"
+
+_dependency_manager_dependencies_file_name: "{{
+  dependencies_file_name |
+  default(dependency_manager_dependencies_file_name) |
+  default('dependencies')
+}}"
+
+_dependency_manager_default_include_file_types:
+  - '.*\.y(a|)ml$'
+  - '.*\.json$'
+  - '.*\.(ini|cfg)$'
+  - '.*\.(j2|jinja2)$'
+  - '.*\.py$'
+  - '.*\.ps1$'
+
+_dependency_manager_default_exclude:
+  - '^.*\.git.*'
+  - '.*\.md$'
+  - '^\.vscode.*'
+  - '(?i)^license(?:|\.[a-z]+)$'
+
+_dependency_manager_dependency_types:
+  ansible_inventory: _dependency_manager_ansible_inventory
+  ansible_playbook: _dependency_manager_ansible_playbook
+  ansible_role: _dependency_manager_ansible_role
+
+_dependency_manager_ansible_inventory:
+  path: "{{ _dependency_manager_playbook_directory }}/inventory"
+  include: "{{
+    _dependency_manager_default_include_file_types + [
+      '^group_vars',
+      '^host_vars',
+      '^[^.]+$'
+    ]
+  }}"
+  exclude: "{{ _dependency_manager_default_exclude }}"
+
+_dependency_manager_ansible_playbook:
+  path: "{{ _dependency_manager_playbook_directory }}"
+  include: "{{
+    _dependency_manager_default_include_file_types + [
+      '^group_vars',
+      '^host_vars',
+      '^inventor(y|ies)',
+      '^library',
+      '^module_utils',
+      '^.*_plugins',
+      '^playbook(s|)',
+      '^roles'
+    ]
+  }}"
+  exclude: "{{ _dependency_manager_default_exclude }}"
+
+_dependency_manager_ansible_role:
+  path: "{{ _dependency_manager_playbook_directory }}/roles/{{ _dependency_manager_dependency.name }}"
+  include: "{{
+    _dependency_manager_default_include_file_types + [
+      '^tasks',
+      '^handlers',
+      '^templates',
+      '^files',
+      '^vars',
+      '^defaults',
+      '^library',
+      '^module_utils',
+      '^.*_plugins'
+    ]
+  }}"
+  exclude: "{{ _dependency_manager_default_exclude }}"
+
+_dependency_manager_assembled_dependencies_return_variable: "{{
+  assembled_dependencies_return_variable |
+  default(dependency_manager_assembled_dependencies_return_variable) |
+  default('dependency_manager_assembled_dependencies')
+}}"

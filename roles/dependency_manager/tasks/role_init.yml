@@ -1,0 +1,6 @@
+---
+- name: init vars
+  set_fact:
+    _dependency_manager_found_dependencies: []
+    _dependency_manager_collected_dependencies: []
+    _dependency_manager_filtered_dependencies: []

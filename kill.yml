@@ -1,0 +1,10 @@
+- hosts: controller
+  gather_facts: no
+  vars:
+    _kill_filter: "{{
+      filter |
+      default(kill_filter)
+    }}"
+  tasks:
+    - name: "kill executions matching {{ _kill_filter }}"
+      shell: "ps aux | grep -i '{{ _kill_filter }}' | grep -v 'grep' | grep -v 'kill.yml' | awk '{print $2}' | xargs kill -9"

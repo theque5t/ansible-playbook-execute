@@ -1,0 +1,52 @@
+---
+- name: "output : check status"
+  async_status:
+    jid: "{{ _execution_manager_execution.ansible_job_id }}"
+  loop: "{{ _execution_manager_executed_executions.results }}"
+  loop_control:
+    loop_var: _execution_manager_execution
+  register: _execution_manager_executed_executions_status
+
+- name: "output : return stdout"
+  shell: "if [ -f '{{ output }}' ]; then cat '{{ output }}' && echo > '{{ output }}'; fi"
+  with_items: "{{ _execution_manager_executed_executions_status.results }}"
+  loop_control:
+    loop_var: _execution_manager_executed_executions_status_result
+  vars:
+    execution_item: "{{ _execution_manager_executed_executions_status_result['_execution_manager_execution']['_execution_manager_execution'] }}"
+    execution_index: "{{ execution_item.0 }}"
+    execution: "{{ execution_item.1 }}"
+    output: "{{ execution['execution_directory'] }}/{{ execution['execution_id'] }}.out"
+    diy_runner_item_on_ok_msg: >-
+      {%- from 'roles/execution_manager/templates/macros.j2'
+          import format_lines with context
+      -%}
+      {%- set newline, stdout = "\n", ansible_callback_diy.result.output.stdout_lines
+      -%}
+      {%- if (stdout | reject('equalto','') | list() | length) > 0 -%}
+      {%-   set stdout = stdout |
+                         map("regex_replace", "\u0000") |
+                         map("regex_replace", "^Script (?:started|done) on \\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}-\\d{4}$") |
+                         join(newline)
+      -%}
+      {{-   format_lines(execution.invocation_label,
+                         execution.execution_label,
+                         'output',
+                         stdout,
+                         execution.callback_color,
+                         execution.callback_color_reset,
+                         execution.callback_pad_right,
+                         execution.callback_timestamp)
+      -}}
+      {%- endif
+      -%}
+
+- name: "output : wait for refresh interval"
+  wait_for:
+    timeout: "{{ _execution_manager_output_refresh_frequency | int }}"
+
+- name: "output : recurse"
+  include_tasks: output.yml
+  when: has_running_jobs
+  vars:
+    has_running_jobs: "{{ (_execution_manager_executed_executions_status.results | selectattr('finished','equalto',False) | list() | length()) > 0 }}"

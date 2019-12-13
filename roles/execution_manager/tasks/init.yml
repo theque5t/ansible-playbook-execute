@@ -1,0 +1,166 @@
+---
+- name: "init : print init started"
+  debug:
+    msg: "{{ phase }}: {{ message }}"
+  vars:
+    phase: init
+    message: started
+    diy_runner_on_ok_msg: >-
+      {%- from 'roles/execution_manager/templates/macros.j2'
+          import format_lines with context
+      -%}
+      {{- format_lines(invocation_label, execution_label, phase, message, color, color_reset, pad_right, timestamp)
+      -}}
+
+- name: "init : execution space setup"
+  block:
+    - name: "init : print execution space setup started"
+      debug:
+        msg: "{{ phase }}: {{ message }}"
+      vars:
+        phase: init
+        message: "execution space setup: started"
+        diy_runner_on_ok_msg: >-
+          {%- from 'roles/execution_manager/templates/macros.j2'
+              import format_lines with context
+          -%}
+          {{- format_lines(invocation_label, execution_label, phase, message, color, color_reset, pad_right, timestamp)
+          -}}
+
+    - name: set execution timestamp
+      setup:
+        filter: ansible_date_time
+      register: _execution_manager_execution_timestamp
+
+    - name: "init : set execution id"
+      set_fact:
+        _execution_manager_execution_id: "{{ execution_timestamp }}_{{ salt }}"
+      vars:
+        execution_timestamp: "{{ _execution_manager_execution_timestamp.ansible_facts.ansible_date_time.iso8601_basic }}"
+        salt: "{{ 1000 | random }}{{ 1000 | random }}{{ 1000 | random }}"
+
+    - name: "init : set execution path"
+      set_fact:
+        _execution_manager_execution_directory: "{{ _execution_manager_executions_directory }}/{{ _execution_manager_execution_id }}"
+
+    - name: "init : create execution path"
+      file:
+        path: "{{ _execution_manager_execution_directory }}"
+        state: directory
+
+    - name: "init : print execution space path"
+      debug:
+        msg: "{{ phase }}: {{ message }}"
+      vars:
+        phase: init
+        message: "execution space setup: path: {{ playbook_dir }}/{{ _execution_manager_execution_directory }}"
+        diy_runner_on_ok_msg: >-
+          {%- from 'roles/execution_manager/templates/macros.j2'
+              import format_lines with context
+          -%}
+          {{- format_lines(invocation_label, execution_label, phase, message, color, color_reset, pad_right, timestamp)
+          -}}
+
+    - name: "init : print execution space setup completed"
+      debug:
+        msg: "{{ phase }}: {{ message }}"
+      vars:
+        phase: init
+        message: "execution space setup: completed"
+        diy_runner_on_ok_msg: >-
+          {%- from 'roles/execution_manager/templates/macros.j2'
+              import format_lines with context
+          -%}
+          {{- format_lines(invocation_label, execution_label, phase, message, color, color_reset, pad_right, timestamp)
+          -}}
+
+
+- name: "init : dependency setup"
+  block:
+    - name: "init : print dependency setup started"
+      debug:
+        msg: "{{ phase }}: {{ message }}"
+      vars:
+        phase: init
+        message: "dependency setup: started"
+        diy_runner_on_ok_msg: >-
+          {%- from 'roles/execution_manager/templates/macros.j2'
+              import format_lines with context
+          -%}
+          {{- format_lines(invocation_label, execution_label, phase, message, color, color_reset, pad_right, timestamp)
+          -}}
+
+    - name: "init : dependency_manager"
+      when: _execution_manager_execution.1.dependencies is defined
+      include_role:
+        name: dependency_manager
+      vars:
+        playbook_directory: "{{ _execution_manager_execution_directory }}"
+        dependencies: "{{ _execution_manager_execution.1.dependencies | default([]) }}"
+        assembled_dependencies_return_variable: "_{{ _execution_manager_execution_id }}_assembled_dependencies"
+
+    - name: "init : print assembled dependencies"
+      debug:
+        msg: "{{ phase }}: {{ message }}"
+      with_items: "{{ assembled_dependencies }}"
+      vars:
+        assembled_dependencies: "{{ lookup('vars', '_'+_execution_manager_execution_id+'_assembled_dependencies') }}"
+        color_reset: "\e[0m"
+        cyan: "\e[38;5;81m"
+        yellow: "\e[38;5;11m"
+        phase: init
+        message: "dependency setup: assembled: {{ cyan }}{{ item.name }}{{ color_reset }} {{ yellow }}{{ item.version }}{{ color_reset }}"
+        diy_runner_item_on_ok_msg: >-
+          {%- from 'roles/execution_manager/templates/macros.j2'
+              import format_lines with context
+          -%}
+          {{- format_lines(invocation_label, execution_label, phase, message, color, color_reset, pad_right, timestamp)
+          -}}
+
+    - name: "init : print dependency setup completed"
+      debug:
+        msg: "{{ phase }}: {{ message }}"
+      vars:
+        phase: init
+        message: "dependency setup: completed"
+        diy_runner_on_ok_msg: >-
+          {%- from 'roles/execution_manager/templates/macros.j2'
+              import format_lines with context
+          -%}
+          {{- format_lines(invocation_label, execution_label, phase, message, color, color_reset, pad_right, timestamp)
+          -}}
+
+- name: "init : add to initialized executions list"
+  set_fact:
+    _execution_manager_initialized_executions: "{{ _execution_manager_initialized_executions | union([ _execution_manager_execution.1 | combine(initialization) ]) }}"
+  vars:
+    initialization:
+      execution_id: "{{ _execution_manager_execution_id }}"
+      execution_directory: "{{ _execution_manager_execution_directory }}"
+      invocation_label: "{{ invocation_label }}"
+      execution_label: "{{ execution_label }}"
+      callback_color: "{{ color }}"
+      callback_color_reset: "{{ color_reset }}"
+      callback_pad_right: "{{ pad_right }}"
+      callback_timestamp: "{{ timestamp }}"
+
+- name: "init : print initialized executions list"
+  debug:
+    var: _execution_manager_initialized_executions
+
+- name: "init : print init completed"
+  debug:
+    msg: "{{ phase }}: {{ message }}"
+  vars:
+    phase: init
+    message: completed
+    diy_runner_on_ok_msg: >-
+      {%- from 'roles/execution_manager/templates/macros.j2'
+          import format_lines with context
+      -%}
+      {{- format_lines(invocation_label, execution_label, phase, message, color, color_reset, pad_right, timestamp)
+      -}}
+
+- name: "init : set last color index"
+  set_fact:
+    _execution_manager_last_color_index: "{{ color_index | int }}"

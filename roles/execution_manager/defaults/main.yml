@@ -1,0 +1,238 @@
+---
+_execution_manager_executions: "{{
+  executions |
+  default(execution_manager_executions)
+}}"
+
+_execution_manager_output_timestamps: "{{
+  output_timestamps |
+  default(execution_manager_output_timestamps) |
+  default(false)
+}}"
+
+_execution_manager_output_refresh_frequency: "{{
+  output_refresh_frequency |
+  default(execution_manager_output_refresh_frequency) |
+  default(5)
+}}"
+
+_execution_manager_executions_directory: "{{
+  executions_directory |
+  default(execution_manager_executions_directory) |
+  default('.executions')
+}}"
+
+_execution_manager_execution_schema:
+  label:
+    value_types: [unicode, AnsibleUnicode]
+    arg_schema:
+      type: none
+  playbooks:
+    value_types: [list]
+    arg_schema:
+      type: parameter
+      arg_format: parameter
+      value_format: space_delimited
+  inventory:
+    value_types: [list]
+    arg_schema:
+      type: multi_use_option
+      arg_format: option
+      value_format: quoted
+  environment:
+    value_types: [dict]
+    arg_schema:
+      type: environment
+      arg_format: parameter
+      value_format: key_equals_value
+  extra_vars:
+    value_types: [list]
+    arg_schema:
+      type: multi_use_option
+      arg_format: option
+      value_format:
+        by_type:
+          dict: json
+          unicode: quoted
+          AnsibleUnicode: quoted
+  dependencies:
+    value_types: [list]
+    arg_schema:
+      type: none
+  ask_vault_pass:
+    value_types: [bool]
+    arg_schema:
+      type: single_use_option
+      arg_format: switch
+  check:
+    value_types: [bool]
+    arg_schema:
+      type: single_use_option
+      arg_format: switch
+  diff:
+    value_types: [bool]
+    arg_schema:
+      type: single_use_option
+      arg_format: switch
+  flush_cache:
+    value_types: [bool]
+    arg_schema:
+      type: single_use_option
+      arg_format: switch
+  force_handlers:
+    value_types: [bool]
+    arg_schema:
+      type: single_use_option
+      arg_format: switch
+  forks:
+    value_types: [int]
+    arg_schema:
+      type: single_use_option
+      arg_format: option
+      value_format: unquoted
+  limit:
+    value_types: [unicode, AnsibleUnicode]
+    arg_schema:
+      type: single_use_option
+      arg_format: option
+      value_format: quoted
+  list_hosts:
+    value_types: [bool]
+    arg_schema:
+      type: single_use_option
+      arg_format: switch
+  list_tags:
+    value_types: [bool]
+    arg_schema:
+      type: single_use_option
+      arg_format: switch
+  list_tasks:
+    value_types: [bool]
+    arg_schema:
+      type: single_use_option
+      arg_format: switch
+  module_path:
+    value_types: [list]
+    arg_schema:
+      type: single_use_option
+      arg_format: option
+      value_format: colon_delimited
+  skip_tags:
+    value_types: [list]
+    arg_schema:
+      type: single_use_option
+      arg_format: option
+      value_format: comma_delimited
+  start_at_task:
+    value_types: [unicode, AnsibleUnicode]
+    arg_schema:
+      type: single_use_option
+      arg_format: option
+      value_format: quoted
+  syntax_check:
+    value_types: [bool]
+    arg_schema:
+      type: single_use_option
+      arg_format: switch
+  tags:
+    value_types: [list]
+    arg_schema:
+      type: single_use_option
+      arg_format: option
+      value_format: comma_delimited
+  vault_id:
+    value_types: [unicode, AnsibleUnicode]
+    arg_schema:
+      type: single_use_option
+      arg_format: option
+      value_format: quoted
+  vault_password_file:
+    value_types: [unicode, AnsibleUnicode]
+    arg_schema:
+      type: single_use_option
+      arg_format: option
+      value_format: quoted
+  verbose:
+    value_types: [int]
+    arg_schema:
+      type: single_use_option
+      arg_format:
+        level: v
+  ask_pass:
+    value_types: [bool]
+    arg_schema:
+      type: single_use_option
+      arg_format: switch
+  private_key:
+    value_types: [unicode, AnsibleUnicode]
+    arg_schema:
+      type: single_use_option
+      arg_format: option
+      value_format: quoted
+  user:
+    value_types: [unicode, AnsibleUnicode]
+    arg_schema:
+      type: single_use_option
+      arg_format: option
+      value_format: quoted
+  connection:
+    value_types: [unicode, AnsibleUnicode]
+    arg_schema:
+      type: single_use_option
+      arg_format: option
+      value_format: quoted
+  timeout:
+    value_types: [int]
+    arg_schema:
+      type: single_use_option
+      arg_format: option
+      value_format: unquoted
+  ssh_common_args:
+    value_types: [unicode, AnsibleUnicode]
+    arg_schema:
+      type: single_use_option
+      arg_format: option
+      value_format: quoted
+  sftp_extra_args:
+    value_types: [unicode, AnsibleUnicode]
+    arg_schema:
+      type: single_use_option
+      arg_format: option
+      value_format: quoted
+  scp_extra_args:
+    value_types: [unicode, AnsibleUnicode]
+    arg_schema:
+      type: single_use_option
+      arg_format: option
+      value_format: quoted
+  ssh_extra_args:
+    value_types: [unicode, AnsibleUnicode]
+    arg_schema:
+      type: single_use_option
+      arg_format: option
+      value_format: quoted
+  become:
+    value_types: [bool]
+    arg_schema:
+      type: single_use_option
+      arg_format: switch
+  become_method:
+    value_types: [unicode, AnsibleUnicode]
+    arg_schema:
+      type: single_use_option
+      arg_format: option
+      value_format: quoted
+  become_user:
+    value_types: [unicode, AnsibleUnicode]
+    arg_schema:
+      type: single_use_option
+      arg_format: option
+      value_format: quoted
+  ask_become_pass:
+    value_types: [bool]
+    arg_schema:
+      type: single_use_option
+      arg_format: switch
+
+_execution_manager_last_color_index: -1
+

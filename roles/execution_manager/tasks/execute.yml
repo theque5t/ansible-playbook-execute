@@ -1,0 +1,27 @@
+---
+- name: execute
+  command:
+    argv:
+      - script
+      - --flush
+      - --quiet
+      - --return
+      - '{{ execution_output }}'
+      - --command
+      - echo '{{ _execution_manager_invocation_label }}.{{ execution.execution_label }}'; cd '{{ execution_directory }}'; {{ execution_playbook_command }}
+  async: 10000
+  poll: 0
+  with_indexed_items: "{{ _execution_manager_initialized_executions }}"
+  loop_control:
+    loop_var: _execution_manager_execution
+  register: _execution_manager_executed_executions
+  vars:
+    execution: "{{ _execution_manager_execution.1 }}"
+    execution_directory: "{{ execution.execution_directory }}"
+    execution_output: "{{ execution_directory }}/{{ execution.execution_id }}.out"
+    execution_playbook_command: >-
+      {%- from 'roles/execution_manager/templates/macros.j2'
+          import get_playbook_command, generate_arg, transform with context
+      -%}
+      {{- get_playbook_command(execution, _execution_manager_execution_schema)
+      -}}

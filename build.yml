@@ -1,0 +1,73 @@
+- name: build
+  hosts: controller
+  gather_facts: no
+  vars:
+    _build_clean: "{{ clean | default(false) }}"
+    _build_number: "{{ build_number | default(_build_date) }}"
+    _build_directory: "{{ build_directory | default('build') }}"
+    _build_version: "{{ version if version else _build_number }}"
+  tasks:
+    - set_fact:
+        _build_date: "{{ lookup('pipe', 'date +%Y%m%d%H%M%S%3N') }}"
+
+    - name: clean build directory
+      file:
+        path: "{{ _build_directory }}"
+        state: absent
+      when: _build_clean
+      vars:
+        diy_playbook_on_task_start_msg: cleaning...
+
+    - name: create build directory
+      file:
+        path: "{{ _build_directory }}"
+        state: directory
+      vars:
+        diy_playbook_on_task_start_msg: building...
+
+    - name: create build and base directories
+      file:
+        path: "{{ _build_directory }}/{{ _build_version }}/{{ item }}"
+        state: directory
+      with_items:
+        - callback_plugins
+        - roles
+
+    - name: add artifacts
+      copy:
+        content: "{{ item.content | default(omit) }}"
+        src: "{{ item.src | default(omit) }}"
+        dest: "{{ item.dest }}"
+      with_items:
+        - src: callback_plugins/diy.py
+          dest: "{{ build }}/callback_plugins/"
+        - src: "roles/execution_manager"
+          dest: "{{ build }}/roles/"
+        - src: "roles/dependency_manager"
+          dest: "{{ build }}/roles/"
+        - src: ansible.cfg
+          dest: "{{ build }}/"
+        - src: controller.yml
+          dest: "{{ build }}/"
+        - src: execute.yml
+          dest: "{{ build }}/"
+        - src: kill.yml
+          dest: "{{ build }}/"
+        - src: LICENSE
+          dest: "{{ build }}/"
+        - content: |
+            name: execute
+            author: Trevor Highfill (@theque5t)
+            description: Ansible playbook that takes in executions in code, assembles their dependencies, and runs them asynchronously
+            company:
+            license: MIT
+            date: "{{ _build_date }}"
+            build: "{{ _build_number }}"
+            version: "{{ _build_version }}"
+            min_ansible_version:
+            source_repo: https://github.com/theque5t/ansible-playbook-execute
+          dest: "{{ build }}/manifest.yml"
+      vars:
+        build: "{{ _build_directory }}/{{ _build_version }}"
+        diy_runner_on_ok_msg: build successfull
+        diy_runner_on_ok_msg_color: green

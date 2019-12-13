@@ -1,0 +1,9 @@
+---
+- name: init vars
+  set_fact:
+    _execution_manager_initialized_executions: []
+    _execution_manager_invocation_label: "{{
+      invocation_label |
+      default(execution_manager_invocation_label) |
+      default(1000000 | random)
+    }}"

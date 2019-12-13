@@ -1,0 +1,62 @@
+---
+
+- name: "get : print uncollected dependencies list"
+  debug:
+    var: _dependency_manager_uncollected_dependencies
+
+- name: "get : dependency schema assertions"
+  assert:
+    that: "{{ item.assert.it.items()[0][1] }}"
+  with_items: "{{ tests }}"
+  vars:
+    tests: >-
+      {%- from 'roles/dependency_manager/templates/macros.j2'
+          import get_dependency_tests, increment with context
+      -%}
+      {{- get_dependency_tests(_dependency_manager_uncollected_dependencies,
+                               _dependency_manager_dependency_schema)
+      -}}
+
+- name: "get : git dependencies"
+  git:
+    repo: "{{ _dependency_manager_dependency.src.repo }}"
+    dest: "{{ _dependency_manager_dependency_working_directory }}"
+    version: "{{ _dependency_manager_dependency.src.version }}"
+    force: yes
+  with_items: "{{ _dependency_manager_uncollected_dependencies | selectattr('src_type', 'equalto', 'git_repo') | list() }}"
+  loop_control:
+    loop_var: _dependency_manager_dependency
+  vars:
+    _dependency_manager_dependency_working_directory: "{{ _dependency_manager_working_directory }}/{{ _dependency_manager_dependency.name }}_{{ _dependency_manager_dependency.version }}"
+
+- name: "get : local file dependencies : paths"
+  debug:
+    msg: This src_type is not supported yet. This is a TODO
+
+- name: "get : local file dependencies : regex pattern matching"
+  debug:
+    msg: This src_type is not supported yet. This is a TODO
+
+- name: "get : local file dependencies : glob pattern matching"
+  debug:
+    msg: This src_type is not supported yet. This is a TODO
+
+- name: "get : local file dependencies : archives"
+  debug:
+    msg: This src_type is not supported yet. This is a TODO
+
+- name: "get : remote file dependencies : archives"
+  debug:
+    msg: This src_type is not supported yet. This is a TODO
+
+- name: "get : remote file dependencies : urls"
+  debug:
+    msg: This src_type is not supported yet. This is a TODO
+
+- name: "get : set collected dependencies list"
+  set_fact:
+    _dependency_manager_collected_dependencies: "{{ _dependency_manager_collected_dependencies + _dependency_manager_uncollected_dependencies }}"
+
+- name: "get : print collected dependencies list"
+  debug:
+    var: _dependency_manager_collected_dependencies

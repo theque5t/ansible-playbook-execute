@@ -1,0 +1,26 @@
+---
+- name: role init
+  include_tasks: role_init.yml
+
+- name: collect
+  include_tasks: collect.yml
+
+- name: filter
+  include_tasks: filter.yml
+
+- name: assemble
+  include_tasks: assemble.yml
+  with_items: "{{ _dependency_manager_filtered_dependencies }}"
+  loop_control:
+    loop_var:
+      _dependency_manager_dependency
+  vars:
+    _dependency_manager_dependency_inst: "{{
+      lookup('vars', _dependency_manager_dependency_types[_dependency_manager_dependency.type]) |
+      combine({ 'working_directory': _dependency_manager_working_directory+'/'+_dependency_manager_dependency.name+'_'+_dependency_manager_dependency.version }) |
+      combine(_dependency_manager_dependency)
+    }}"
+
+- name: cleanup
+  include_tasks: cleanup.yml
+  when: _dependency_manager_cleanup

@@ -1,0 +1,7 @@
+---
+- name: execute
+  hosts: controller
+  gather_facts: no
+  tasks:
+    - include_role:
+        name: execution_manager

@@ -1,0 +1,5 @@
+---
+- name: "cleanup : working directory"
+  file:
+    state: absent
+    path: "{{ _dependency_manager_working_directory }}/"

@@ -1,0 +1,142 @@
+{%- macro increment(dct, key, inc=1)    -%}
+{{-   dct.update({key: dct[key] + inc}) -}}
+{%- endmacro                            -%}
+
+{%- macro get_dependency_tests(dependencies, dependency_schema)                                      -%}
+{%-   set tests = []                                                                                 -%}
+{%-   for dependency in dependencies                                                                 -%}
+{%-     set counters = {'total_required_keys': 0,
+                        'total_required_keys_present': 0,
+                        'total_value_set_assertions': 0,
+                        'total_value_set_assertions_passed': 0 }                                     -%}
+{%-     set dependency_is_dict = ((dependency | type_debug) == 'dict')                               -%}
+{{-     tests.append({
+          'dependency': dependency,
+          'assert': {
+            'describe':  "the dependency",
+                  'it': {"is a dictionary": dependency_is_dict}
+        }})                                                                                          -}}
+{%-     if dependency_is_dict                                                                        -%}
+{%-       for key, value in dependency_schema.items()                                                -%}
+{%-         if value.required                                                                        -%}
+{{-           increment(counters, 'total_required_keys')                                             -}}
+{%-           set key_is_present = key in dependency                                                 -%}
+{%-           if key_is_present                                                                      -%}
+{{-             increment(counters, 'total_required_keys_present')                                   -}}
+{%-           endif                                                                                  -%}
+{{-           tests.append({
+                'dependency': dependency,
+                'assert': {
+                  'describe':  "the dependency key "+key,
+                        'it': {"is present": key_is_present}
+              }})                                                                                    -}}
+{%-         endif                                                                                    -%}
+{%-       endfor                                                                                     -%}
+{%-       if counters.total_required_keys_present == counters.total_required_keys                    -%}
+{%-         set value_set_assertions, value_type_assertions = {}, {}                                 -%}
+{%-         for key, value in dependency_schema.items()                                              -%}
+{%-           if key in dependency                                                                   -%}
+{%-             if value.value_set is defined                                                        -%}
+{{-               increment(counters, 'total_value_set_assertions')                                  -}}
+{{-               value_set_assertions.update({key: value})                                          -}}
+{%-             elif value.value_types is defined                                                    -%}
+{{-               value_type_assertions.update({key: value})                                         -}}
+{%-             endif                                                                                -%}
+{%-           endif                                                                                  -%}
+{%-         endfor                                                                                   -%}
+{%-         for key, value in value_set_assertions.items()                                           -%}
+{%-           set value_set = value.value_set                                                        -%}
+{%-           if 'pattern' in value_set                                                              -%}
+{%-             set value_set = [value_set.pattern]                                                  -%}
+{%-             set value_in_set = dependency[key] is regex(value_set[0])                            -%}
+{%-           else                                                                                   -%}
+{%-             set value_in_set = dependency[key] in value_set                                      -%}
+{%-           endif                                                                                  -%}
+{%-           if value_in_set                                                                        -%}
+{{-             increment(counters, 'total_value_set_assertions_passed')                             -}}
+{%-           endif                                                                                  -%}
+{{-           tests.append({
+                'dependency': dependency,
+                'assert': {
+                  'describe':  "the dependency key "+key+" value",
+                        'it': {"matches "+(value_set | join(', or ')): value_in_set}
+              }})                                                                                    -}}
+{%-         endfor                                                                                   -%}
+{%-         if counters.total_value_set_assertions_passed == counters.total_value_set_assertions     -%}
+{%-           for key, value in value_type_assertions.items()                                        -%}
+{%-             set value_types = value.value_types                                                  -%}
+{%-             if 'by_src_type' in value_types                                                      -%}
+{%-               set value_types = value_types.by_src_type[dependency.src_type]                     -%}
+{%-             endif                                                                                -%}
+{%-             if 'dict' in value_types                                                             -%}
+{%-               set value_is_dict = (dependency[key] | type_debug) == 'dict'                       -%}
+{{-               tests.append({
+                    'dependency': dependency,
+                    'assert': {
+                      'describe':  "the dependency key "+key+" value",
+                            'it': {"is of type dict": value_is_dict}
+                  }})                                                                                -}}
+{%-               if value_is_dict                                                                   -%}
+{{-                 tests.append({
+                      'dependency': dependency,
+                      'assert': {
+                        'describe':  "the dependency key "+key+" value",
+                              'it': {"is of type dict with exactly keys "+(value_types.dict |
+                                                                   join(', and ')):
+                                     ((dependency[key].keys() |
+                                       symmetric_difference(value_types.dict) |
+                                       length ) == 0)}
+                    }})                                                                              -}}
+{%-               endif                                                                              -%}
+{%-             else                                                                                 -%}
+{{-               tests.append({
+                    'dependency': dependency,
+                    'assert': {
+                      'describe':  "the dependency key "+key+" value",
+                            'it': {"is of type "+(value_types | join(', or ')):
+                                   ((dependency[key] | type_debug) in value_types)}
+                  }})                                                                                -}}
+{%-             endif                                                                                -%}
+{%-           endfor                                                                                 -%}
+{%-         endif                                                                                    -%}
+{%-       endif                                                                                      -%}
+{%-     endif                                                                                        -%}
+{%-   endfor                                                                                         -%}
+{{-   tests                                                                                          -}}
+{%- endmacro                                                                                         -%}
+
+{%- macro update(dct, key, value) -%}
+{{-   dct.update({key: value})    -}}
+{%- endmacro                      -%}
+
+{%- macro filter_dependencies(dependencies)                                                               -%}
+{%-   set ret, state= [], {'selected':{}, 'pre_selected':[], 'last_selected_version': ''}                 -%}
+{%-   for dependency in dependencies                                                                      -%}
+{%-     if dependency.type+'_'+dependency.name not in state.selected                                      -%}
+{%-       set name_type_matches = dependencies | selectattr('name','equalto', dependency.name) |
+                        selectattr('type','equalto', dependency.type) |
+                        list                                                                              -%}
+{%-       if (name_type_matches | length) > 1                                                             -%}
+{{-         update(state, 'pre_selected', [])                                                             -}}
+{{-         update(state, 'last_selected_version', name_type_matches[0].version)                          -}}
+{%-         for dependency in name_type_matches                                                           -%}
+{%-           if (dependency.version is version_compare(state.last_selected_version, '==', strict=True))  -%}
+{{-             state.pre_selected.append(dependency)                                                     -}}
+{%-           elif (dependency.version is version_compare(state.last_selected_version, '>', strict=True)) -%}
+{{              update(state, 'pre_selected', [])                                                         -}}
+{{-             state.pre_selected.append(dependency)                                                     -}}
+{{-             update(state, 'last_selected_version', dependency.version)                                -}}
+{%-           endif                                                                                       -%}
+{%-         endfor                                                                                        -%}
+{%-         for dependency in state.pre_selected                                                          -%}
+{{-           state.selected.update({dependency.type+'_'+dependency.name: dependency.version})            -}}
+{{-           ret.append(dependency)                                                                      -}}
+{%-         endfor                                                                                        -%}
+{%-       else                                                                                            -%}
+{{-         state.selected.update({dependency.type+'_'+dependency.name: dependency.version})              -}}
+{{-         ret.append(dependency)                                                                        -}}
+{%-       endif                                                                                           -%}
+{%-     endif                                                                                             -%}
+{%-   endfor                                                                                              -%}
+{{-   ret                                                                                                 -}}
+{%- endmacro                                                                                              -%}

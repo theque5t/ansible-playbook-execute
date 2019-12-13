@@ -1,0 +1,97 @@
+---
+- name: role init
+  include_tasks: role_init.yml
+
+- name: schema assertions
+  assert:
+    that: "{{ item.assert.it.items()[0][1] }}"
+  with_items: "{{ tests }}"
+  vars:
+    tests: >-
+      {%- from 'roles/execution_manager/templates/macros.j2'
+          import get_execution_tests with context
+      -%}
+      {{- get_execution_tests(_execution_manager_executions,
+                              _execution_manager_execution_schema)
+      -}}
+
+- name: init
+  include_tasks: init.yml
+  with_indexed_items: "{{ _execution_manager_executions }}"
+  loop_control:
+    loop_var: _execution_manager_execution
+  vars:
+    invocation_label: "{{ _execution_manager_invocation_label }}"
+    execution_index: "{{ _execution_manager_execution.0 }}"
+    execution_label: "{{ _execution_manager_execution.1.label+'.'+execution_index if _execution_manager_execution.1.label is defined else execution_index }}"
+    colors: ["\e[38;5;46m","\e[38;5;39m","\e[38;5;105m","\e[38;5;15m","\e[38;5;12m","\e[38;5;34m","\e[38;5;60m","\e[38;5;21m","\e[38;5;22m","\e[38;5;8m","\e[38;5;6m"]
+    color_index: >-
+      {%- from 'roles/execution_manager/templates/macros.j2'
+          import get_next_index with context
+      -%}
+      {{- get_next_index(_execution_manager_last_color_index,
+                         (colors | length))
+      -}}
+    color: "{{ colors[color_index | int] }}"
+    color_reset: "\e[0m"
+    pad_right: >-
+      {%- from 'roles/execution_manager/templates/macros.j2'
+          import get_max_prefix_size with context
+      -%}
+      {{- get_max_prefix_size(_execution_manager_executions,
+                              invocation_label)
+      -}}
+    timestamp: "{{ _execution_manager_output_timestamps }}"
+
+- name: execute
+  include_tasks: execute.yml
+
+- name: output
+  include_tasks: output.yml
+
+- name: result
+  debug:
+    msg: "{{ phase }}: {{ message }}"
+  with_items: "{{ _execution_manager_executed_executions_status.results }}"
+  loop_control:
+    loop_var: _execution_manager_executed_executions_status_result
+  failed_when: _execution_manager_executed_executions_status_result.failed
+  vars:
+    execution_item: "{{ _execution_manager_executed_executions_status_result['_execution_manager_execution']['_execution_manager_execution'] }}"
+    execution: "{{ execution_item.1 }}"
+    color_reset: "{{ execution.callback_color_reset }}"
+    red: "\e[48;5;1m"
+    green: "\e[48;5;2m\e[38;5;232m"
+    phase: result
+    message: |-
+      conclusion: {{ color_reset }}{{ red+'failed' if _execution_manager_executed_executions_status_result.failed else green+'successful' }}{{ color_reset }}
+      rc:         {{ _execution_manager_executed_executions_status_result.rc }}
+      started:    {{ _execution_manager_executed_executions_status_result.start }}
+      finished:   {{ _execution_manager_executed_executions_status_result.end }}
+      duration:   {{ _execution_manager_executed_executions_status_result.delta }}
+    diy_runner_item_on_ok_msg: >-
+      {%- from 'roles/execution_manager/templates/macros.j2'
+          import format_lines with context
+      -%}
+      {{- format_lines(execution.invocation_label,
+                       execution.execution_label,
+                       phase,
+                       message,
+                       execution.callback_color,
+                       execution.callback_color_reset,
+                       execution.callback_pad_right,
+                       execution.callback_timestamp)
+      -}}
+    diy_runner_item_on_failed_msg: >-
+      {%- from 'roles/execution_manager/templates/macros.j2'
+          import format_lines with context
+      -%}
+      {{- format_lines(execution.invocation_label,
+                       execution.execution_label,
+                       phase,
+                       message,
+                       execution.callback_color,
+                       execution.callback_color_reset,
+                       execution.callback_pad_right,
+                       execution.callback_timestamp)
+      -}}

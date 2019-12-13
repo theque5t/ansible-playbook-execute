@@ -1,0 +1,12 @@
+---
+- name: "filter : dependencies"
+  set_fact:
+    _dependency_manager_filtered_dependencies: "{{ filtered_dependencies }}"
+  vars:
+    filtered_dependencies: >-
+      {%- from "roles/dependency_manager/templates/macros.j2" import filter_dependencies, update with context -%}
+      {{- filter_dependencies(_dependency_manager_collected_dependencies) -}}
+
+- name: "filter : print filtered dependencies list"
+  debug:
+    var: _dependency_manager_filtered_dependencies

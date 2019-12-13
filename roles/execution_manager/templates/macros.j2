@@ -1,0 +1,136 @@
+{%- macro get_execution_tests(executions, execution_schema)                 -%}
+{%-   set tests = []                                                        -%}
+{%-   for execution in executions                                           -%}
+{%-     set execution_index = loop.index-1                                  -%}
+{%-     set execution_is_dict = ((execution | type_debug) == 'dict')        -%}
+{{-     tests.append({
+          'execution_index': execution_index,
+          'assert': {
+            'describe':  "the execution",
+                  'it': {"is a dictionary": execution_is_dict}
+        }})                                                                 -}}
+{%-     if execution_is_dict                                                -%}
+{%-       for key, value in execution.items()                               -%}
+{%-         set execution_key_is_valid = key in execution_schema            -%}
+{{-         tests.append({
+              'execution_index': execution_index,
+              'assert': {
+                'describe':  "the execution key "+key,
+                      'it': {"is valid": execution_key_is_valid}
+            }})                                                             -}}
+{%-         if execution_key_is_valid                                       -%}
+{%-           set value_types = execution_schema[key].value_types           -%}
+{{-           tests.append({
+                'execution_index': execution_index,
+                'assert': {
+                  'describe':  "the execution key "+key+" value",
+                        'it': {"is of type "+(value_types | join(', or ')):
+                              ((value | type_debug) in value_types)}
+              }})                                                           -}}
+{%-         endif                                                           -%}
+{%-       endfor                                                            -%}
+{%-     endif                                                               -%}
+{%-   endfor                                                                -%}
+{{-   tests                                                                 -}}
+{%- endmacro                                                                -%}
+
+{%- macro get_next_index(last_index, available_indexes) -%}
+{%-   set next_index = (last_index | int)+1             -%}
+{%-   if next_index >= available_indexes                -%}
+{%-     set next_index = 0                              -%}
+{%-   endif                                             -%}
+{{-   next_index                                        -}}
+{%- endmacro                                            -%}
+
+{%- macro transform(obj, format)             -%}
+{%-   if format == 'empty'                   -%}
+{{-     ''                                   -}}
+{%-   elif format == 'unquoted'              -%}
+{{-     obj | string                         -}}
+{%-   elif format == 'quoted'                -%}
+{{-     obj | string | quote                 -}}
+{%-   elif format == 'space_delimited'       -%}
+{{-     obj | map('quote') | join(' ')       -}}
+{%-   elif format == 'comma_delimited'       -%}
+{{-     obj | join(',') | quote              -}}
+{%-   elif format == 'colon_delimited'       -%}
+{{-     obj | join(':') | quote              -}}
+{%-   elif format == 'json'                  -%}
+{{-     obj | to_json | quote                -}}
+{%-   elif format == 'key_equals_value'      -%}
+{{-     obj[0]+'='+(obj[1] | quote)          -}}
+{%-   elif 'by_type' in format               -%}
+{%-     set type = (obj | type_debug)        -%}
+{{-     transform(obj, format.by_type[type]) -}}
+{%-   endif                                  -%}
+{%- endmacro                                 -%}
+
+{%- macro new_arg(key, value, schema)                            -%}
+{%-   set arg = '--'+(key | lower | regex_replace('_', '-'))+' ' -%}
+{%-   if schema.arg_format == 'parameter'                        -%}
+{{-     transform(value, schema.value_format)                    -}}
+{%-   elif schema.arg_format == 'option'                         -%}
+{{-     arg+transform(value, schema.value_format)                -}}
+{%-   elif schema.arg_format == 'switch'                         -%}
+{{-     arg if value else ''                                     -}}
+{%-   elif 'level' in schema.arg_format                          -%}
+{{-     '-'+(schema.arg_format.level * value) if value else ''   -}}
+{%-   else                                                       -%}
+{{-     ''                                                       -}}
+{%-   endif                                                      -%}
+{%- endmacro                                                     -%}
+
+{%- macro get_playbook_command(execution, execution_schema)                   -%}
+{%-   set environment, options, parameters = [], [], []                       -%}
+{%-   for key, value in execution.items()                                     -%}
+{%-     if key in execution_schema                                            -%}
+{%-       set arg_schema = execution_schema[key].arg_schema                   -%}
+{%-       if arg_schema.type == 'parameter'                                   -%}
+{{-         parameters.append(new_arg(key, value, arg_schema))                -}}
+{%-       elif arg_schema.type == 'single_use_option'                         -%}
+{{-         options.append(new_arg(key, value, arg_schema))                   -}}
+{%-       elif arg_schema.type == 'multi_use_option'                          -%}
+{%-         for use in value                                                  -%}
+{{-           options.append(new_arg(key, use, arg_schema))                   -}}
+{%-         endfor                                                            -%}
+{%-       elif arg_schema.type == 'environment'                               -%}
+{%-         for var in value.items()                                          -%}
+{{-           environment.append(new_arg(key, var, arg_schema))               -}}
+{%-         endfor                                                            -%}
+{%-       endif                                                               -%}
+{%-     endif                                                                 -%}
+{%-   endfor                                                                  -%}
+{{-   (environment + ['ansible-playbook'] + options + parameters) | join(' ') -}}
+{%- endmacro                                                                  -%}
+
+{%- macro get_max_prefix_size(executions, invocation_label)                                   -%}
+{%-   set last_execution_prefix = { 'size': 0 }                                               -%}
+{%-   for execution in executions                                                             -%}
+{%-     set size = 1 + (loop.index | string | length) + (invocation_label | string | length)  -%}
+{%-     if execution.label is defined                                                         -%}
+{%-       set size = size + 1 + (execution.label | string | length)                           -%}
+{%-     endif                                                                                 -%}
+{%-     if size > last_execution_prefix.size                                                  -%}
+{{-       last_execution_prefix.update({ 'size': size })                                      -}}
+{%-     endif                                                                                 -%}
+{%-   endfor                                                                                  -%}
+{{-   last_execution_prefix.size                                                              -}}
+{%- endmacro                                                                                  -%}
+
+{%- macro format_lines(invocation_label, execution_label, phase, string, color, color_reset, pad_right, timestamp)            -%}
+{%-   set newline = "\n"                                                                                                      -%}
+{%-   set string_lines = string.split(newline)                                                                                -%}
+{%-   set prefix = '{0}.{1}'.format(invocation_label, execution_label)                                                        -%}
+{%-   set prefix = ('{0:<'+pad_right+'}  {1:<6}  | ').format(prefix, phase)                                                   -%}
+{%-   set prefix = prefix | regex_replace("(\|)(\s$)", color+"\\1"+color_reset+"\\2")                                         -%}
+{%-   set prefix = prefix | regex_replace("("+execution_label+")([\s]+(init|output|result))", color+"\\1"+color_reset+"\\2")  -%}
+{%-   set string_lines = string_lines | map("regex_replace", "^", prefix) | list()                                            -%}
+{%-   if timestamp                                                                                                            -%}
+{%-     set timestamped_string_lines = []                                                                                     -%}
+{%-     for line in string_lines                                                                                              -%}
+{{-       timestamped_string_lines.append(line | regex_replace('^', lookup('pipe','date +"%Y-%m-%d %H:%M:%S.%3N%z"')+'  '))   -}}
+{%-     endfor                                                                                                                -%}
+{%-     set string_lines = timestamped_string_lines                                                                           -%}
+{%-   endif                                                                                                                   -%}
+{{-   string_lines | join(newline)                                                                                            -}}
+{%- endmacro                                                                                                                  -%}

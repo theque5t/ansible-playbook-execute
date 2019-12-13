@@ -1,0 +1,41 @@
+---
+- name: "assemble : path : find items"
+  find:
+    paths: "{{ _dependency_manager_dependency_inst.working_directory }}"
+    recurse: yes
+    file_type: any
+    hidden: yes
+  register: _dependency_manager_find_path_files_operation
+
+- name: "assemble : path : create"
+  file:
+    path: "{{ _dependency_manager_dependency_inst.path }}"
+    state: directory
+
+- name: "assemble : path : add items"
+  command:
+    cmd: "{{ item }}"
+    warn: no
+  with_items:
+    - "tar -c --no-recursion -f '{{ tar_archive }}' -C '{{ tar_archive_dir }}' {{ tar_archive_items }}"
+    - "tar -xf '{{ tar_archive }}' -C '{{ tar_extract_target }}'"
+  vars:
+    found_items: "{{
+      _dependency_manager_find_path_files_operation.files |
+      map(attribute='path') |
+      map('regex_replace', _dependency_manager_dependency_inst.working_directory+'/(.*)', '\\1') |
+      list()
+    }}"
+    include_pattern: "{{ _dependency_manager_dependency_inst.include | join('|') }}"
+    included_items: "{{ found_items | select('match', include_pattern) | list() }}"
+    exclude_pattern: "{{ _dependency_manager_dependency_inst.exclude | join('|') }}"
+    excluded_items: "{{ included_items | select('match', exclude_pattern) | list() }}"
+    path_items: "{{ included_items | difference(excluded_items) }}"
+    tar_archive: '{{ _dependency_manager_dependency_inst.working_directory }}.tar'
+    tar_archive_dir: '{{ _dependency_manager_dependency_inst.working_directory }}'
+    tar_archive_items: "{{ path_items  | map('regex_replace', '(.*)', \"'\"+'\\1'+\"'\") | join(' ') }}"
+    tar_extract_target: '{{ _dependency_manager_dependency_inst.path }}'
+
+- name: "assemble : add dependency to assembled dependencies list"
+  set_fact:
+    "{{ _dependency_manager_assembled_dependencies_return_variable }}": "{{ lookup('vars', _dependency_manager_assembled_dependencies_return_variable, default=[]) + [_dependency_manager_dependency_inst] }}"

@@ -1,0 +1,29 @@
+---
+- name: "find : find dependency files"
+  find:
+    paths: "{{ _dependency_manager_playbook_directory }}"
+    recurse: yes
+    use_regex: yes
+    patterns: "^{{ _dependency_manager_dependencies_file_name }}.y(a|)ml$"
+  register: _dependency_manager_find_dependency_files_operation
+
+- name: "find : set dependency files list"
+  set_fact:
+    _dependency_manager_dependency_files: "{{ _dependency_manager_find_dependency_files_operation.files | map(attribute='path') | list() }}"
+
+- name: "find : print dependency files list"
+  debug:
+    var: _dependency_manager_dependency_files
+
+- name: "find : add dependencies from files to found dependencies list"
+  set_fact:
+    _dependency_manager_found_dependencies: "{{ _dependency_manager_found_dependencies | union(lookup('file', item) | from_yaml) }}"
+  with_items: "{{ _dependency_manager_dependency_files }}"
+
+- name: "find : add dependencies from parameters to found dependencies list"
+  set_fact:
+    _dependency_manager_found_dependencies: "{{ _dependency_manager_found_dependencies | union(_dependency_manager_dependencies) }}"
+
+- name: "find : print found dependencies list"
+  debug:
+    var: _dependency_manager_found_dependencies

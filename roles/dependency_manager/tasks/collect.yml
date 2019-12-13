@@ -1,0 +1,21 @@
+---
+- name: find
+  include_tasks: find.yml
+
+- name: get
+  include_tasks: get.yml
+  when: _dependency_manager_has_uncollected_dependencies
+
+- name: find
+  include_tasks: find.yml
+
+- name: status
+  debug:
+    msg: "{{ collected_count }} of {{ found_count }} collected"
+  vars:
+    collected_count: "{{ _dependency_manager_collected_dependencies | length }}"
+    found_count: "{{ _dependency_manager_found_dependencies | length }}"
+
+- name: recurse
+  include_tasks: collect.yml
+  when: _dependency_manager_has_uncollected_dependencies

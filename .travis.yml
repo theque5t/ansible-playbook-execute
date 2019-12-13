@@ -1,0 +1,27 @@
+---
+language: python
+python:
+  - "2.7"
+env:
+  - BUILD_DIR=build
+  - ANSIBLE_CONFIG=ansible.cfg
+before_install:
+  - sudo apt-get update -qq
+install:
+  - pip install ansible
+before_script:
+  - 'ansible-playbook -i controller.yml -e "{ clean: true, build_directory: ${BUILD_DIR}, build_number: ${TRAVIS_BUILD_NUMBER} }" build.yml'
+script:
+  - 'ansible-playbook -i "${BUILD_DIR}/${TRAVIS_BUILD_NUMBER}/controller.yml" "${BUILD_DIR}/${TRAVIS_BUILD_NUMBER}/execute.yml" --syntax-check'
+  - 'ansible-playbook -i "${BUILD_DIR}/${TRAVIS_BUILD_NUMBER}/controller.yml" "${BUILD_DIR}/${TRAVIS_BUILD_NUMBER}/kill.yml" --syntax-check'
+deploy:
+  provider: releases
+  api_key:
+    secure: GDKxdS1sPwwlo4zCzcCph9bQASEomvel5ti0xpOpZ++4QnHOlPmI+pzN+j0ZHjmhVRIgYElkF+D11NFBYw668TixG6FSjrMtw1807AyR9xaDGWGPKDuw12SV5rJq6y0yfO9JJ9aSYaNqVZymkqtaoYU9kzanqxYUguGtCvu6jGTLTC1uF+6ZYUwQ0Jt3wNB9LHxI9xwZfQboMPoDU2ekNKZV9WSJ8R37kDfbYyazz7xLzR4rbPdpzoR1xvZqAg4BP4Dc4722maN2XPIn49+fOJLewzj70yQ2Va7xuFaQTCqhtYoDqApDwTks5wGBay0TYQU2sctIaDxr/19EZxiKK87Uf5He8EUuLtIab2sEVfV9HLgLVuHMCId+AOVSdGudfW/Z+xT2Ue91WoqknrLUhwp26AY4T5rruSfFqP2g/hkB8y121eiyHdzJWqqG8CfYOexayXJe+n03lKWF4bh8/jMaB3iSlChXp0qtHuPc0k/THdzP5UhOFBTtkE/bb9uMxvmh7LvVxKQMeVvs+M6ks8hoj4e3U8wu+meU6Eh385RHWY3G1AGozUePGzKflPJNNG/5trkFF/SegXqzxL/7vbwo6E4Gl7HMOT336Ko0FUvVEu6twndY597G7NPG/rqd+hopZgxGSBsphfEUs/LAS6jlFyXHnwPYV3xB8z2zrx8=
+  file_glob: true
+  file:
+    - "${BUILD_DIR}/${TRAVIS_BUILD_NUMBER}/*"
+  skip_cleanup: true
+  on:
+    repo: theque5t/ansible-playbook-execute
+    tags: true
