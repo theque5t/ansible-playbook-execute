@@ -27,7 +27,7 @@
 
     - name: set build
       set_fact:
-        _build: "{{ _build_directory }}/{{ _build_version }}"
+        _build: "{{ _build_directory }}/{{ _build_number }}"
 
     - name: create _build and base directories
       file:
@@ -75,19 +75,19 @@
     - name: package artifacts
       archive:
         path: "{{ _build }}/*"
-        dest: "{{ _build }}.tar.gz"
+        dest: "{{ _build_version }}.tar.gz"
         format: gz
 
     - name: package stat
       stat:
-        path: "{{ _build }}.tar.gz"
+        path: "{{ _build_version }}.tar.gz"
         checksum_algorithm: sha256
       register: _build_stat
 
     - name: create package checksum
       copy:
         content: "{{ _build_stat.stat.checksum }}"
-        dest: "{{ _build }}.tar.gz.sha256"
+        dest: "{{ _build_version }}.tar.gz.sha256"
       vars:
         diy_runner_on_ok_msg: build successfull
         diy_runner_on_ok_msg_color: green
