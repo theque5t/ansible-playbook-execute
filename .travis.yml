@@ -21,6 +21,7 @@ deploy:
   file:
     - "${BUILD_DIR}/${TRAVIS_BUILD_NUMBER}/*"
   skip_cleanup: true
+  draft: true
   on:
     repo: theque5t/ansible-playbook-execute
     tags: true
