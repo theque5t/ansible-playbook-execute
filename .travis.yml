@@ -3,7 +3,7 @@ language: python
 python:
   - "2.7"
 env:
-  - BUILD_DIR=build ANSIBLE_CONFIG=ansible.cfg
+  - ANSIBLE_CONFIG=ansible.cfg BUILD_DIR=build BUILD=ansible-playbook-execute-${TRAVIS_BUILD_NUMBER}
 before_install:
   - sudo apt-get update -qq
 install:
@@ -11,8 +11,8 @@ install:
 before_script:
   - 'ansible-playbook -i controller.yml -e "{ clean: true, build_directory: ${BUILD_DIR}, build_number: ${TRAVIS_BUILD_NUMBER}, version: ${TRAVIS_TAG} }" build.yml'
 script:
-  - 'ansible-playbook -i "${BUILD_DIR}/${TRAVIS_BUILD_NUMBER}/controller.yml" "${BUILD_DIR}/${TRAVIS_BUILD_NUMBER}/execute.yml" --syntax-check'
-  - 'ansible-playbook -i "${BUILD_DIR}/${TRAVIS_BUILD_NUMBER}/controller.yml" "${BUILD_DIR}/${TRAVIS_BUILD_NUMBER}/kill.yml" --syntax-check'
+  - 'ansible-playbook -i "${BUILD_DIR}/${BUILD}/controller.yml" "${BUILD_DIR}/${BUILD}/execute.yml" --syntax-check'
+  - 'ansible-playbook -i "${BUILD_DIR}/${BUILD}/controller.yml" "${BUILD_DIR}/${BUILD}/kill.yml" --syntax-check'
 deploy:
   provider: releases
   api_key:
