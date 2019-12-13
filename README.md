@@ -114,7 +114,40 @@ Kills inflight executions
 
 ## Installation
 
-TODO  
+1. Download the package archive
+```sh
+wget "https://github.com/theque5t/ansible-playbook-execute/releases/download/v1.0.0/ansible-playbook-execute-v1.0.0.tar.gz"
+```
+
+2. Extract the archive
+```sh
+mkdir ~/ansible_execute
+tar -xvzf ansible-playbook-execute-v1.0.0.tar.gz -C ~/ansible_execute
+```
+
+3. Ready to use
+```yaml
+echo '
+executions:
+  - label: env_a
+    playbooks:
+      - playbook.yml
+    inventory:
+      - inventory
+    environment:
+      ANSIBLE_STDOUT_CALLBACK: default
+    extra_vars:
+      - target_inventory: int,&node.1
+    dependencies:
+      - name: test-playbook-1
+        type: ansible_playbook
+        src:
+          repo: https://github.com/theque5t/ansible-playbook-test-playbook-1.git
+          version: v1.0.0
+        src_type: git_repo
+        version: 1.0.0
+' > executions.yml && ansible-playbook -i controller.yml -e "@executions.yml" execute.yml
+```
 
 ## Usage
 
