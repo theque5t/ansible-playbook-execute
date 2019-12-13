@@ -8,3 +8,7 @@
   tasks:
     - name: "kill executions matching {{ _kill_filter }}"
       shell: "ps aux | grep -i '{{ _kill_filter }}' | grep -v 'grep' | grep -v 'kill.yml' | awk '{print $2}' | xargs kill -9"
+      vars:
+        diy_playbook_on_task_start_msg: killing...
+        diy_runner_on_ok_msg: killed
+        diy_runner_on_ok_msg_color: green
