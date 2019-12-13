@@ -40,7 +40,36 @@ Ansible playbook that:
    ```
    ![Quick Start](./docs/assets/quickstart.gif)
 
-[TOC]
+* [Ansible Playbook: Execute](#ansible-playbook-execute )
+	* [Quick Start](#quick-start )
+	* [Design Principles](#design-principles )
+	* [Components](#components )
+		* [Callback Plugin: `diy.py`](#callback-plugin-diypy )
+		* [Configuration: `ansible.cfg`](#configuration-ansiblecfg )
+		* [Inventory: `controller.yml`](#inventory-controlleryml )
+		* [Playbook: `execute.yml`](#playbook-executeyml )
+		* [Role: `execution_manager`](#role-execution_manager )
+		* [Role: `dependency_manager`](#role-dependency_manager )
+		* [Playbook: `kill.yml`](#playbook-killyml )
+	* [Installation](#installation )
+	* [Usage](#usage )
+		* [Playbook Variables](#playbook-variables )
+		* [Examples](#examples )
+			* [Execute described executions](#execute-described-executions )
+			* [Kill executions](#kill-executions )
+		* [Execution Schema](#execution-schema )
+		* [Dependency Schema](#dependency-schema )
+		* [Dependency Types](#dependency-types )
+			* [Default include file types](#default-include-file-types )
+			* [Default exclude file types](#default-exclude-file-types )
+		* [Dependency Source Types](#dependency-source-types )
+		* [Output Format](#output-format )
+	* [Development](#development )
+		* [Issue Tracker](#issue-tracker )
+		* [Builds](#builds )
+		* [Contributing](#contributing )
+	* [License](#license )
+	* [Author](#author )
 
 ## Design Principles
 - Built in Ansible to allow use of pre-existing knowledge users and contributors will likely have, and to consolidate controller dependencies
@@ -106,7 +135,8 @@ TODO
             ```sh
             ansible-playbook -i controller.yml -e "{ executions: { label: env_a, ... } }" execute.yml
             ```
-          * Extra variables file:
+          * Extra variables file:  
+            
             **executions.yml:**
             ```yaml
             executions:
