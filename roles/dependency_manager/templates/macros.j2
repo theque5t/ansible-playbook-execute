@@ -83,7 +83,7 @@
                         'describe':  "the dependency key "+key+" value",
                               'it': {"is of type dict with exactly keys "+(value_types.dict |
                                                                    join(', and ')):
-                                     ((dependency[key].keys() |
+                                     ((dependency[key].keys() | list |
                                        symmetric_difference(value_types.dict) |
                                        length ) == 0)}
                     }})                                                                              -}}

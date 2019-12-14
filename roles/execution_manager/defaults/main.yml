@@ -24,7 +24,7 @@ _execution_manager_executions_directory: "{{
 
 _execution_manager_execution_schema:
   label:
-    value_types: [unicode, AnsibleUnicode]
+    value_types: [unicode, AnsibleUnicode, str]
     arg_schema:
       type: none
   playbooks:
@@ -91,7 +91,7 @@ _execution_manager_execution_schema:
       arg_format: option
       value_format: unquoted
   limit:
-    value_types: [unicode, AnsibleUnicode]
+    value_types: [unicode, AnsibleUnicode, str]
     arg_schema:
       type: single_use_option
       arg_format: option
@@ -124,7 +124,7 @@ _execution_manager_execution_schema:
       arg_format: option
       value_format: comma_delimited
   start_at_task:
-    value_types: [unicode, AnsibleUnicode]
+    value_types: [unicode, AnsibleUnicode, str]
     arg_schema:
       type: single_use_option
       arg_format: option
@@ -141,13 +141,13 @@ _execution_manager_execution_schema:
       arg_format: option
       value_format: comma_delimited
   vault_id:
-    value_types: [unicode, AnsibleUnicode]
+    value_types: [unicode, AnsibleUnicode, str]
     arg_schema:
       type: single_use_option
       arg_format: option
       value_format: quoted
   vault_password_file:
-    value_types: [unicode, AnsibleUnicode]
+    value_types: [unicode, AnsibleUnicode, str]
     arg_schema:
       type: single_use_option
       arg_format: option
@@ -164,19 +164,19 @@ _execution_manager_execution_schema:
       type: single_use_option
       arg_format: switch
   private_key:
-    value_types: [unicode, AnsibleUnicode]
+    value_types: [unicode, AnsibleUnicode, str]
     arg_schema:
       type: single_use_option
       arg_format: option
       value_format: quoted
   user:
-    value_types: [unicode, AnsibleUnicode]
+    value_types: [unicode, AnsibleUnicode, str]
     arg_schema:
       type: single_use_option
       arg_format: option
       value_format: quoted
   connection:
-    value_types: [unicode, AnsibleUnicode]
+    value_types: [unicode, AnsibleUnicode, str]
     arg_schema:
       type: single_use_option
       arg_format: option
@@ -188,25 +188,25 @@ _execution_manager_execution_schema:
       arg_format: option
       value_format: unquoted
   ssh_common_args:
-    value_types: [unicode, AnsibleUnicode]
+    value_types: [unicode, AnsibleUnicode, str]
     arg_schema:
       type: single_use_option
       arg_format: option
       value_format: quoted
   sftp_extra_args:
-    value_types: [unicode, AnsibleUnicode]
+    value_types: [unicode, AnsibleUnicode, str]
     arg_schema:
       type: single_use_option
       arg_format: option
       value_format: quoted
   scp_extra_args:
-    value_types: [unicode, AnsibleUnicode]
+    value_types: [unicode, AnsibleUnicode, str]
     arg_schema:
       type: single_use_option
       arg_format: option
       value_format: quoted
   ssh_extra_args:
-    value_types: [unicode, AnsibleUnicode]
+    value_types: [unicode, AnsibleUnicode, str]
     arg_schema:
       type: single_use_option
       arg_format: option
@@ -217,13 +217,13 @@ _execution_manager_execution_schema:
       type: single_use_option
       arg_format: switch
   become_method:
-    value_types: [unicode, AnsibleUnicode]
+    value_types: [unicode, AnsibleUnicode, str]
     arg_schema:
       type: single_use_option
       arg_format: option
       value_format: quoted
   become_user:
-    value_types: [unicode, AnsibleUnicode]
+    value_types: [unicode, AnsibleUnicode, str]
     arg_schema:
       type: single_use_option
       arg_format: option

@@ -25,7 +25,8 @@
                 'assert': {
                   'describe':  "the execution key "+key+" value",
                         'it': {"is of type "+(value_types | join(', or ')):
-                              ((value | type_debug) in value_types)}
+                              ((value | type_debug) in value_types)},
+                        'type': (value | type_debug)
               }})                                                           -}}
 {%-         endif                                                           -%}
 {%-       endfor                                                            -%}

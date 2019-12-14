@@ -2,7 +2,7 @@
 _dependency_manager_dependency_schema:
   name:
     required: true
-    value_types: [unicode, AnsibleUnicode, AnsibleUnsafeText]
+    value_types: [unicode, AnsibleUnicode, AnsibleUnsafeText, str]
   version:
     required: true
     value_set:

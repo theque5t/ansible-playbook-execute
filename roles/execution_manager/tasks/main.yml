@@ -4,7 +4,10 @@
 
 - name: schema assertions
   assert:
-    that: "{{ item.assert.it.items()[0][1] }}"
+    that: >-
+          {%- for test, result in item.assert.it.items() -%}
+          {{-   result                                   -}}
+          {%- endfor                                     -%}
   with_items: "{{ tests }}"
   vars:
     tests: >-
