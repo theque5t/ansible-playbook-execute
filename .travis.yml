@@ -9,7 +9,7 @@ env:
     - BUILD_DIR=build
     - BUILD=ansible-playbook-execute-${TRAVIS_BUILD_NUMBER}
   matrix:
-    - ANSIBLE_VERSION=2.8
+    - ANSIBLE_VERSION=2.8.5
 
 before_install:
   - sudo apt-get update -qq
