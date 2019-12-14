@@ -18,10 +18,10 @@ install:
 before_script:
   - 'ansible-playbook -i controller.yml -e "{ clean: true, build_directory: ${BUILD_DIR}, build_number: ${TRAVIS_BUILD_NUMBER}, version: ${TRAVIS_TAG} }" build.yml'
 script:
-  - 'ansible-playbook -i "${BUILD_DIR}/${BUILD}/controller.yml" "${BUILD_DIR}/${BUILD}/execute.yml" --syntax-check'
-  - 'ansible-playbook -i "${BUILD_DIR}/${BUILD}/controller.yml" "${BUILD_DIR}/${BUILD}/kill.yml" --syntax-check'
+  - 'cd "${BUILD_DIR}/${BUILD}"; ansible-playbook -i controller.yml execute.yml --syntax-check'
+  - 'cd "${BUILD_DIR}/${BUILD}"; ansible-playbook -i controller.yml kill.yml --syntax-check'
   - |
-    echo "
+    cd "${BUILD_DIR}/${BUILD}"; echo "
       executions:
       - label: env_a
         playbooks:
