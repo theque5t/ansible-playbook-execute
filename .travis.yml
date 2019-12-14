@@ -17,11 +17,9 @@ install:
   - pip install ansible==${ANSIBLE_VERSION}
 before_script:
   - 'ansible-playbook -i controller.yml -e "{ clean: true, build_directory: ${BUILD_DIR}, build_number: ${TRAVIS_BUILD_NUMBER}, version: ${TRAVIS_TAG} }" build.yml'
-script:
-  - 'cd "./${BUILD_DIR}/${BUILD}" && ansible-playbook -i controller.yml execute.yml --syntax-check'
-  - 'cd "./${BUILD_DIR}/${BUILD}" && ansible-playbook -i controller.yml kill.yml --syntax-check'
+  - cd "${BUILD_DIR}/${BUILD}"
   - |
-    cd "./${BUILD_DIR}/${BUILD}" && echo "
+    echo "
       executions:
       - label: env_a
         playbooks:
@@ -40,7 +38,11 @@ script:
               version: v1.0.0
             src_type: git_repo
             version: 1.0.0
-    " > executions.yml && ansible-playbook -i controller.yml -e "@executions.yml" execute.yml
+    " > executions.yml
+script:
+  - ansible-playbook -i controller.yml execute.yml --syntax-check
+  - ansible-playbook -i controller.yml kill.yml --syntax-check
+  - ansible-playbook -i controller.yml -e "@executions.yml" execute.yml
 deploy:
   provider: releases
   api_key:
