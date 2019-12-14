@@ -21,7 +21,7 @@ script:
   - 'ansible-playbook -i "${BUILD_DIR}/${BUILD}/controller.yml" "${BUILD_DIR}/${BUILD}/execute.yml" --syntax-check'
   - 'ansible-playbook -i "${BUILD_DIR}/${BUILD}/controller.yml" "${BUILD_DIR}/${BUILD}/kill.yml" --syntax-check'
   - |
-    'echo "
+    echo "
       executions:
       - label: env_a
         playbooks:
@@ -40,7 +40,7 @@ script:
               version: v1.0.0
             src_type: git_repo
             version: 1.0.0
-    " > executions.yml && ansible-playbook -i controller.yml -e "@executions.yml" execute.yml'
+    " > executions.yml && ansible-playbook -i controller.yml -e "@executions.yml" execute.yml
 deploy:
   provider: releases
   api_key:
