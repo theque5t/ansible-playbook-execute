@@ -52,6 +52,8 @@ Ansible playbook that:
 		* [Role: `dependency_manager`](#role-dependency_manager )
 		* [Playbook: `kill.yml`](#playbook-killyml )
 	* [Installation](#installation )
+		* [Requirements](#requirements)
+    * [Steps](#steps)
 	* [Usage](#usage )
 		* [Playbook Variables](#playbook-variables )
 		* [Examples](#examples )
@@ -67,6 +69,7 @@ Ansible playbook that:
 	* [Development](#development )
 		* [Issue Tracker](#issue-tracker )
 		* [Builds](#builds )
+    * [Testing](#testing )
 		* [Contributing](#contributing )
 	* [License](#license )
 	* [Author](#author )
@@ -114,6 +117,11 @@ Kills inflight executions
 
 ## Installation
 
+### Requirements
+* Controller inventory minimum Ansible version: 2.8.5
+* Controller OS: linux distro
+
+### Steps
 1. Download the package archive
 ```sh
 wget "https://github.com/theque5t/ansible-playbook-execute/releases/download/v1.0.0/ansible-playbook-execute-v1.0.0.tar.gz"
@@ -127,7 +135,9 @@ tar -xvzf ansible-playbook-execute-v1.0.0.tar.gz -C ~/ansible_execute
 
 3. Ready to use
 ```yaml
+cd ~/ansible_execute
 echo '
+invocation_label: deploy_1
 executions:
   - label: env_a
     playbooks:
@@ -168,14 +178,15 @@ executions:
             ```sh
             ansible-playbook -i controller.yml -e "{ executions: { label: env_a, ... } }" execute.yml
             ```
-          * Extra variables file:  
-            
+          * Extra variables file:
+
             **executions.yml:**
             ```yaml
             executions:
               - label: env_a
                 ...
             ```
+
             **Command:**
             ```sh
             ansible-playbook -i controller.yml -e "@executions.yml" execute.yml
@@ -192,6 +203,7 @@ executions:
             ansible-playbook -i controller.yml -e "@executions.yml" -e "{ invocation_label: deploy_1 }" execute.yml
             ```
           * Extra variables file:
+
             **executions.yml:**
             ```yaml
             invocation_label: deploy_1
@@ -199,6 +211,7 @@ executions:
               - label: env_a
                 ...
             ```
+
             **Command:**
             ```sh
             ansible-playbook -i controller.yml -e "@executions.yml" execute.yml
@@ -218,6 +231,7 @@ executions:
             ansible-playbook -i controller.yml -e "@executions.yml" -e "{ invocation_label: deploy_1, output_timestamps: true }" execute.yml
             ```
           * Extra variables file:
+
             **executions.yml:**
             ```yaml
             invocation_label: deploy_1
@@ -226,6 +240,7 @@ executions:
               - label: env_a
                 ...
             ```
+
             **Command:**
             ```sh
             ansible-playbook -i controller.yml -e "@executions.yml" execute.yml
@@ -242,6 +257,7 @@ executions:
             ansible-playbook -i controller.yml -e "@executions.yml" -e "{ invocation_label: deploy_1, output_timestamps: true, output_refresh_frequency: 1 }" execute.yml
             ```
           * Extra variables file:
+
             **executions.yml:**
             ```yaml
             invocation_label: deploy_1
@@ -251,6 +267,7 @@ executions:
               - label: env_a
                 ...
             ```
+
             **Command:**
             ```sh
             ansible-playbook -i controller.yml -e "@executions.yml" execute.yml
@@ -267,6 +284,7 @@ executions:
             ansible-playbook -i controller.yml -e "@executions.yml" -e "{ invocation_label: deploy_1, output_timestamps: true, output_refresh_frequency: 1, executions_directory: ~/executions }" execute.yml
             ```
           * Extra variables file:
+
             **executions.yml:**
             ```yaml
             invocation_label: deploy_1
@@ -277,6 +295,7 @@ executions:
               - label: env_a
                 ...
             ```
+
             **Command:**
             ```sh
             ansible-playbook -i controller.yml -e "@executions.yml" execute.yml
@@ -297,6 +316,7 @@ executions:
             ansible-playbook -i controller.yml -e "@executions.yml" -e "{ invocation_label: debug_1, output_timestamps: true, cleanup: false }" execute.yml
             ```
           * Extra variables file:
+
             **executions.yml:**
             ```yaml
             invocation_label: debug_1
@@ -306,6 +326,7 @@ executions:
               - label: env_a
                 ...
             ```
+
             **Command:**
             ```sh
             ansible-playbook -i controller.yml -e "@executions.yml" execute.yml
@@ -322,6 +343,7 @@ executions:
             ansible-playbook -i controller.yml -e "@executions.yml" -e "{ invocation_label: deploy_1, output_timestamps: true, output_refresh_frequency: 1, executions_directory: ~/executions, dependencies_file_name: requirements }" execute.yml
             ```
           * Extra variables file:
+
             **executions.yml:**
             ```yaml
             invocation_label: deploy_1
@@ -333,6 +355,7 @@ executions:
               - label: env_a
                 ...
             ```
+
             **Command:**
             ```sh
             ansible-playbook -i controller.yml -e "@executions.yml" execute.yml
@@ -348,6 +371,7 @@ executions:
         * **Type:** String
         * **Examples:**
           * Enable the `default` callback plugin output:
+
             **executions.yml:**
             ```yaml
             invocation_label: debug_1
@@ -358,6 +382,7 @@ executions:
               - label: env_a
                 ...
             ```
+
             **Command:**
             ```sh
             ansible-playbook -i controller.yml -e "@executions.yml" execute.yml
@@ -406,6 +431,7 @@ executions:
 
 #### Execute described executions
 1. Describe the execution(s) in the `executions` variable: 
+
    **executions.yml:**
    ```yaml
    executions:
@@ -473,6 +499,7 @@ executions:
            version: 1.0.4
    ```
 2. Run the `execute.yml` playbook 
+
    **Command:**
    ```sh
    ansible-playbook -i controller.yml -e "@executions.yml" -e "{ invocation_label: test_1 }" execute.yml
@@ -481,6 +508,7 @@ executions:
 
 #### Kill executions
 1. Run the `kill.yml` playbook
+
    **Command:**
    ```sh
    ansible-playbook -i controller.yml -e "{ filter: test_1 }" kill.yml
@@ -712,6 +740,9 @@ Please use the [repo issues](https://github.com/theque5t/ansible-playbook-execut
 * Build locally using the `build.yml`
 * Remote builds by Travis CI
 * Builds served via [repo releases](https://github.com/theque5t/ansible-playbook-execute/releases)
+
+### Testing
+* See the `script` key's items in [.travis.yml](.travis.yml)
 
 ### Contributing
 
