@@ -10,12 +10,14 @@ env:
     - BUILD=ansible-playbook-execute-${TRAVIS_BUILD_NUMBER}
   matrix:
     - ANSIBLE_VERSION=2.8.5
+    - ANSIBLE_VERSION=2.9.2
 
 before_install:
   - sudo apt-get update -qq
 install:
   - pip install ansible==${ANSIBLE_VERSION}
 before_script:
+  - ansible --version
   - 'ansible-playbook -i controller.yml -e "{ clean: true, build_directory: ${BUILD_DIR}, build_number: ${TRAVIS_BUILD_NUMBER}, version: ${TRAVIS_TAG} }" build.yml'
   - cd "${BUILD_DIR}/${BUILD}"
   - |
