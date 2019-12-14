@@ -2,17 +2,45 @@
 language: python
 python:
   - "2.7"
+  - "3.5"
 env:
-  - ANSIBLE_CONFIG=ansible.cfg BUILD_DIR=build BUILD=ansible-playbook-execute-${TRAVIS_BUILD_NUMBER}
+  global:
+    - ANSIBLE_CONFIG=ansible.cfg
+    - BUILD_DIR=build
+    - BUILD=ansible-playbook-execute-${TRAVIS_BUILD_NUMBER}
+  matrix:
+    - ANSIBLE_VERSION=2.8
+
 before_install:
   - sudo apt-get update -qq
 install:
-  - pip install ansible
+  - pip install ansible==${ANSIBLE_VERSION}
 before_script:
   - 'ansible-playbook -i controller.yml -e "{ clean: true, build_directory: ${BUILD_DIR}, build_number: ${TRAVIS_BUILD_NUMBER}, version: ${TRAVIS_TAG} }" build.yml'
 script:
   - 'ansible-playbook -i "${BUILD_DIR}/${BUILD}/controller.yml" "${BUILD_DIR}/${BUILD}/execute.yml" --syntax-check'
   - 'ansible-playbook -i "${BUILD_DIR}/${BUILD}/controller.yml" "${BUILD_DIR}/${BUILD}/kill.yml" --syntax-check'
+  - |
+    'echo "
+      executions:
+      - label: env_a
+        playbooks:
+          - playbook.yml
+        inventory:
+          - inventory
+        environment:
+          ANSIBLE_STDOUT_CALLBACK: default
+        extra_vars:
+          - target_inventory: int,&node.1
+        dependencies:
+          - name: test-playbook-1
+            type: ansible_playbook
+            src:
+              repo: https://github.com/theque5t/ansible-playbook-test-playbook-1.git
+              version: v1.0.0
+            src_type: git_repo
+            version: 1.0.0
+    " > executions.yml && ansible-playbook -i controller.yml -e "@executions.yml" execute.yml'
 deploy:
   provider: releases
   api_key:
